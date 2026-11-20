@@ -1,12 +1,13 @@
 ![Arrow Mod Renewed Banner](AMRbanner.jpg)
 
 ## Overview
-* Arrow Mod Renewed updates the classic [Arrow Mod](https://github.com/ttr/tld-ArrowMod) to work seamlessly with modern versions of The Long Dark (v2.58+) and MelonLoader. Customize arrow and arrowhead crafting times, craft arrows anywhere without a workbench (with an adjustable field-crafting time penalty), and unlock a mid to late-game recipe to carve arrow shafts from hardwood.
+* Arrow Mod Renewed updates the classic [Arrow Mod](https://github.com/ttr/tld-ArrowMod) to work seamlessly with modern versions of Hinterland's game The Long Dark, and MelonLoader. Customize arrow and arrowhead crafting times, craft arrows anywhere without a workbench (with an adjustable field-crafting time penalty), and unlock a mid to late-game recipe to carve arrow shafts from hardwood.
 
 ## Features
 * Customizable Crafting Times: Adjust the time required to craft arrowheads and simple arrows.
 * Craft Anywhere (with a time penalty): Allows crafting arrows away from a workbench, with an adjustable additional time penalty (15–60 min) per arrow.
 * Hardwood Arrow Shafts (mid-late Game): Carve 6 arrow shafts at a workbench, using hardwood (Fir) and a knife, once you reach the required Archery skill level.
+* Live Updates & Reset: All settings apply immediately in-game without restarting, plus a built-in 'Reset to defaults' option.
 
 ## What's changed from the original mod?
 * Updated for The Long Dark v2.58+: Migrated to the current versions of MelonLoader and ModSettings.
@@ -45,7 +46,7 @@
 * If you encounter any, please report them on the [GitHub Issues](https://github.com/leatherneck6017/TLD-ArrowModRenewed/issues) page or contact me directly on the [TLD Modding Discord](https://discord.gg/tldmodding) (@leatherneck6017).
 
 ## AI Disclaimer
-* AI tools were consulted during the development of this mod as part of my learning process for exploring *The Long Dark*'s IL2CPP APIs, Harmony patching, and troubleshooting. All code was tested and verified in-game.
+* AI tools were consulted during the development of this mod as part of my learning process for exploring The Long Dark's IL2CPP APIs, Harmony patching, and troubleshooting. All code was tested and verified in-game.
 
 ## Credits
 * Original mod by [**ttr**](https://github.com/ttr) - updated and maintained by [leatherneck6017](https://github.com/leatherneck6017).
