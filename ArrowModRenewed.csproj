@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<LangVersion>Latest</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<DebugType>none</DebugType>
+		<RootNamespace>ArrowModRenewed</RootNamespace>
+		<AssemblyName>ArrowModRenewed</AssemblyName>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<!-- Set the path to The Long Dark installation directory -->
+		<TheLongDarkPath>E:\SteamLibrary\steamapps\common\TheLongDark</TheLongDarkPath>
+		<!-- Don't need to change this -->
+		<ModsPath>$(TheLongDarkPath)\Mods</ModsPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Remove="src\Patches.csBAK" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MonsieurMeh.Modding.TLD.Il2CppAssemblies.Windows" Version="2.58.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="ModData">
+			<HintPath>$(ModsPath)\ModData.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="ModSettings">
+			<HintPath>$(ModsPath)\ModSettings.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+	</ItemGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="Exists('$(ModsPath)')">
+		<Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModsPath)" />
+	</Target>
+
+</Project>

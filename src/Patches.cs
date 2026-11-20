@@ -1,287 +1,255 @@
 using HarmonyLib;
-using UnityEngine;
 using Il2Cpp;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using Il2CppTLD.Gear;
-using Il2CppNodeCanvas.Tasks.Actions;
+using UnityEngine;
 using UnityEngine.AddressableAssets;
-using Unity.VisualScripting;
-using Il2CppSystem;
-using MelonLoader.Preferences;
-using Il2CppSteamworks;
 
-
-namespace ArrowMod
+namespace ArrowModRenewed.src
 {
     internal static class Patches
     {
-
         [HarmonyPatch(typeof(Panel_Crafting), nameof(Panel_Crafting.Initialize))]
-        public class Panel_Crafting_Initialize
+        public static class Panel_Crafting_Initialize
         {
             private static void Postfix()
             {
-                ArrowMod.Log("Adding blueprints.");
-                CraftingLocation arrowBench = CraftingLocation.Workbench;
-                if (Settings.options.arrowsNoBench){
-                  arrowBench = CraftingLocation.Anywhere;
+                BlueprintManager blueprintManager = InterfaceManager.GetInstance().m_BlueprintManager;
+                if (blueprintManager == null || HasBlueprint(blueprintManager, "BLUEPRINT_GEAR_ArrowShaft_ArrowModRenewed_A"))
+                {
+                    return;
                 }
 
-                InterfaceManager.GetInstance().m_BlueprintManager.m_AllBlueprints.Add(new BlueprintData()
+                ArrowModRenewed.Log("Adding blueprints.");
+
+                GearItem? shaftPrefab = GetGearItemPrefab("GEAR_ArrowShaft");
+                GearItem? hardwoodPrefab = GetGearItemPrefab("GEAR_Hardwood");
+                ToolsItem? knifePrefab = GetToolItemPrefab("GEAR_Knife");
+
+                if (shaftPrefab == null || hardwoodPrefab == null)
                 {
-                    name = "BLUEPRINT_GEAR_Arrow_ArrowMod_A",
+                    ArrowModRenewed.Log("Failed to load arrow shaft or hardwood prefabs. Aborting blueprint registration.");
+                    return;
+                }
 
-                    // Inputs
-                    m_RequiredTool = null,
-                    m_OptionalTools = new Il2CppReferenceArray<ToolsItem>(0),
-
-                    // Outputs
-                    m_CraftedResultGear = GetGearItemPrefab("GEAR_Arrow"),
-                    m_CraftedResultCount = 1,
-                    m_CraftingResultType = CraftingResult.StandardGear,
-                    m_CraftedResultDecoration = null,
-                    m_XPModesToDisable = new(),
-
-                    // Process
-                    m_UsesPhoto = false,
-                    m_Locked = true,
-                    m_IgnoreLockInSurvival = false,
-                    m_AppearsInStoryOnly = false,
-                    m_AppearsInSurvivalOnly = false,
-                    m_RequiresLight = true,
-                    m_RequiresLitFire = false,
-                    m_RequiredCraftingLocation = arrowBench,
-                    m_DurationMinutes = Settings.options.arrowCraftTime,
-                    m_CraftingAudio = MakeAudioEvent("PLAY_CRAFTINGARROWS"),
-
-                    m_AppliedSkill = SkillType.None,
-                    m_ImprovedSkill = SkillType.None,
-                    m_CanIncreaseRepairSkill = false,
-                    m_RequiredLiquid = new Il2CppReferenceArray<BlueprintData.RequiredLiquid>(0) { },
-                    m_RequiredPowder = new Il2CppReferenceArray<BlueprintData.RequiredPowder>(0) { },
-
-                    m_RequiredGear = new Il2CppReferenceArray<BlueprintData.RequiredGearItem>(4)
+                // Recipe Shaft A: Arrow Shafts from Hardwood
+                blueprintManager.m_AllBlueprints.Add(CreateBlueprint(
+                    name: "BLUEPRINT_GEAR_ArrowShaft_ArrowModRenewed_A",
+                    resultGear: shaftPrefab,
+                    resultCount: 6,
+                    requiredTool: knifePrefab,
+                    location: CraftingLocation.Workbench,
+                    durationMinutes: 180,
+                    ingredients: new[]
                     {
-                        [0] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_Line") },
-                        [1] = new BlueprintData.RequiredGearItem() { m_Count = 3, m_Item = GetGearItemPrefab("GEAR_CrowFeather") },
-                        [2] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_ArrowShaft") },
-                        [3] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_ArrowHead") }
+                        (hardwoodPrefab, 1)
                     }
-                });
-                ArrowMod.Log("Added: BLUEPRINT_GEAR_Arrow_ArrowMod_A, bench:" + arrowBench);
-                InterfaceManager.GetInstance().m_BlueprintManager.m_AllBlueprints.Add(new BlueprintData() { 
+                ));
+                ArrowModRenewed.Log("Added: BLUEPRINT_GEAR_ArrowShaft_ArrowModRenewed_A");
+            }
 
-                  name = "BLUEPRINT_GEAR_Arrow_ArrowMod_B1",
-
-                  // Inputs
-
-                  m_RequiredTool = GetToolItemPrefab("GEAR_Knife"),
-                  m_OptionalTools = new Il2CppReferenceArray<ToolsItem>(0),
-
-                  // Outputs
-                  m_CraftedResultGear = GetGearItemPrefab("GEAR_Arrow"),
-                  m_CraftedResultCount = 1,
-                  m_CraftingResultType = CraftingResult.StandardGear,
-                  m_CraftedResultDecoration = null,
-                  m_XPModesToDisable = new(),
-
-                  // Process
-                  m_UsesPhoto = false,
-                  m_Locked = true,
-                  m_IgnoreLockInSurvival = false,
-                  m_AppearsInStoryOnly = false,
-                  m_AppearsInSurvivalOnly = false,
-                  m_RequiresLight = true,
-                  m_RequiresLitFire = false,
-                  m_RequiredCraftingLocation = arrowBench,
-                  m_DurationMinutes = Settings.options.arrowCraftTime *2 + Settings.options.craftFletchingFromBarkTime,
-                  m_CraftingAudio = MakeAudioEvent("PLAY_CRAFTINGARROWS"),
-
-                  m_AppliedSkill = SkillType.None,
-                  m_ImprovedSkill = SkillType.None,
-                  m_CanIncreaseRepairSkill = false,
-                  m_RequiredLiquid = new Il2CppReferenceArray<BlueprintData.RequiredLiquid>(0) { },
-                  m_RequiredPowder = new Il2CppReferenceArray<BlueprintData.RequiredPowder>(0) { },
-                  m_RequiredGear = new Il2CppReferenceArray<BlueprintData.RequiredGearItem>(4)
-                  {
-                      [0] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_Line") },
-                      [1] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_BarkTinder") },
-                      [2] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_ArrowShaft") },
-                      [3] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_ArrowHead") }
-                  }
-                });
-                ArrowMod.Log("Added: BLUEPRINT_GEAR_Arrow_ArrowMod_B1, bench:" + arrowBench);
-
-                // Leather mod
-                if ((bool)GearItem.LoadGearItemPrefab("GEAR_Bark"))
+            private static bool HasBlueprint(BlueprintManager manager, string blueprintName)
+            {
+                foreach (BlueprintData bp in manager.m_AllBlueprints)
                 {
-                    InterfaceManager.GetInstance().m_BlueprintManager.m_AllBlueprints.Add(new BlueprintData()
+                    if (bp != null && bp.name == blueprintName)
                     {
-
-                        name = "BLUEPRINT_GEAR_Arrow_ArrowMod_B2",
-
-                        // Inputs
-
-                        m_RequiredTool = GetToolItemPrefab("GEAR_Knife"),
-                        m_OptionalTools = new Il2CppReferenceArray<ToolsItem>(0),
-
-                        // Outputs
-                        m_CraftedResultGear = GetGearItemPrefab("GEAR_Arrow"),
-                        m_CraftedResultCount = 1,
-                        m_CraftingResultType = CraftingResult.StandardGear,
-                        m_CraftedResultDecoration = null,
-                        m_XPModesToDisable = new(),
-
-                        // Process
-                        m_UsesPhoto = false,
-                        m_Locked = true,
-                        m_IgnoreLockInSurvival = false,
-                        m_AppearsInStoryOnly = false,
-                        m_AppearsInSurvivalOnly = false,
-                        m_RequiresLight = true,
-                        m_RequiresLitFire = false,
-                        m_RequiredCraftingLocation = arrowBench,
-                        m_DurationMinutes = Settings.options.arrowCraftTime *2 + Settings.options.craftFletchingFromBarkTime,
-                        m_CraftingAudio = MakeAudioEvent("PLAY_CRAFTINGARROWS"),
-
-                        m_AppliedSkill = SkillType.None,
-                        m_ImprovedSkill = SkillType.None,
-                        m_CanIncreaseRepairSkill = false,
-                        m_RequiredLiquid = new Il2CppReferenceArray<BlueprintData.RequiredLiquid>(0) { },
-                        m_RequiredPowder = new Il2CppReferenceArray<BlueprintData.RequiredPowder>(0) { },
-                        m_RequiredGear = new Il2CppReferenceArray<BlueprintData.RequiredGearItem>(4)
-                        {
-                            [0] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_Line") },
-                            [1] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_Bark") },
-                            [2] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_ArrowShaft") },
-                            [3] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_ArrowHead") }
-                        }
-                    });
-                    ArrowMod.Log("Added: BLUEPRINT_GEAR_Arrow_ArrowMod_B2, bench:" + arrowBench);
+                        return true;
+                    }
                 }
-                InterfaceManager.GetInstance().m_BlueprintManager.m_AllBlueprints.Add(new BlueprintData() { 
-                  name = "BLUEPRINT_GEAR_ArrowShaft_ArrowMod_A",
+                return false;
+            }
 
-                  // Inputs
-                  m_RequiredTool = GetToolItemPrefab("GEAR_Knife"),
-                  m_OptionalTools = new Il2CppReferenceArray<ToolsItem>(0),
+            private static BlueprintData CreateBlueprint(
+                string name,
+                GearItem resultGear,
+                int resultCount,
+                ToolsItem? requiredTool,
+                CraftingLocation location,
+                int durationMinutes,
+                (GearItem item, int count)[] ingredients)
+            {
+                var requiredGearArray = new Il2CppReferenceArray<BlueprintData.RequiredGearItem>(ingredients.Length);
+                for (int i = 0; i < ingredients.Length; i++)
+                {
+                    requiredGearArray[i] = new BlueprintData.RequiredGearItem
+                    {
+                        m_Item = ingredients[i].item,
+                        m_Count = ingredients[i].count
+                    };
+                }
 
-                  // Outputs
-                  m_CraftedResultGear = GetGearItemPrefab("GEAR_ArrowShaft"),
-                  m_CraftedResultCount = 5,
-                  m_CraftingResultType = CraftingResult.StandardGear,
-                  m_CraftedResultDecoration = null,
-                  m_XPModesToDisable = new(),
+                BlueprintData bp = ScriptableObject.CreateInstance<BlueprintData>();
+                bp.name = name;
 
-                  // Process
-                  m_UsesPhoto = false,
-                  m_Locked = true,
-                  m_IgnoreLockInSurvival = false,
-                  m_AppearsInStoryOnly = false,
-                  m_AppearsInSurvivalOnly = false,
-                  m_RequiresLight = true,
-                  m_RequiresLitFire = false,
-                  m_RequiredCraftingLocation = CraftingLocation.Workbench,
-                  m_DurationMinutes = 180,
-                  m_CraftingAudio = MakeAudioEvent("PLAY_CRAFTINGARROWS"),
+                // Inputs
+                bp.m_RequiredTool = requiredTool;
+                bp.m_OptionalTools = new Il2CppReferenceArray<ToolsItem>(0);
+                bp.m_RequiredGear = requiredGearArray;
+                bp.m_RequiredLiquid = new Il2CppReferenceArray<BlueprintData.RequiredLiquid>(0);
+                bp.m_RequiredPowder = new Il2CppReferenceArray<BlueprintData.RequiredPowder>(0);
 
-                  m_AppliedSkill = SkillType.None,
-                  m_ImprovedSkill = SkillType.None,
-                  m_CanIncreaseRepairSkill = false,
-                  m_RequiredLiquid = new Il2CppReferenceArray<BlueprintData.RequiredLiquid>(0) { },
-                  m_RequiredPowder = new Il2CppReferenceArray<BlueprintData.RequiredPowder>(0) { },
-                  m_RequiredGear = new Il2CppReferenceArray<BlueprintData.RequiredGearItem>(1)
-                  {
-                      [0] = new BlueprintData.RequiredGearItem() { m_Count = 1, m_Item = GetGearItemPrefab("GEAR_Hardwood") }
-                  },
-                });
-                ArrowMod.Log("Added: BLUEPRINT_GEAR_ArrowShaft_ArrowMod_A");
+                // Outputs
+                bp.m_CraftedResultGear = resultGear;
+                bp.m_CraftedResultCount = resultCount;
+                bp.m_CraftingResultType = CraftingResult.StandardGear;
+                bp.m_CraftedResultDecoration = null;
+                bp.m_CraftingIcon = new AssetReferenceTexture2D("");
+                bp.m_XPModesToDisable = new();
+
+                // Process
+                bp.m_UsesPhoto = false;
+                bp.m_Locked = true;
+                bp.m_IgnoreLockInSurvival = false;
+                bp.m_AppearsInStoryOnly = false;
+                bp.m_AppearsInSurvivalOnly = false;
+                bp.m_RequiresLight = true;
+                bp.m_RequiresLitFire = false;
+                bp.m_RequiredCraftingLocation = location;
+                bp.m_DurationMinutes = durationMinutes;
+                bp.m_CraftingAudio = MakeAudioEvent("PLAY_CRAFTINGARROWS");
+
+                // Skills
+                bp.m_AppliedSkill = SkillType.None;
+                bp.m_ImprovedSkill = SkillType.None;
+                bp.m_CanIncreaseRepairSkill = false;
+
+                return bp;
             }
         }
 
-        [HarmonyPatch(typeof(BlueprintManager), "GetAllBlueprints")]
-        public static class BlueprintManager_GetAllBlueprints {
-            public static void Postfix(BlueprintManager __instance) {
+        [HarmonyPatch(typeof(BlueprintDisplayItem), nameof(BlueprintDisplayItem.Setup))]
+        public static class BlueprintDisplayItem_Setup
+        {
+            private static void Postfix(BlueprintDisplayItem __instance, BlueprintData bpi)
+            {
+                if (__instance == null || bpi == null || __instance.m_DisplayName == null)
+                {
+                    return;
+                }
+
+                if (bpi.name == "BLUEPRINT_GEAR_ArrowShaft_ArrowModRenewed_A")
+                {
+                    __instance.m_DisplayName.text = $"Arrow Shaft (Hardwood) ({bpi.m_CraftedResultCount})";
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(Panel_Crafting), nameof(Panel_Crafting.RefreshSelectedBlueprint))]
+        public static class Panel_Crafting_RefreshSelectedBlueprint
+        {
+            private static void Postfix(Panel_Crafting __instance)
+            {
+                BlueprintData? bp = __instance?.SelectedBPI;
+                if (bp == null)
+                {
+                    return;
+                }
+
+                if (bp.name == "BLUEPRINT_GEAR_ArrowShaft_ArrowModRenewed_A")
+                {
+                    if (__instance!.m_SelectedName != null)
+                    {
+                        __instance.m_SelectedName.text = "Arrow Shaft (Hardwood)";
+                    }
+
+                    if (__instance.m_SelectedDescription != null)
+                    {
+                        __instance.m_SelectedDescription.text = "A batch of arrow shafts carved from seasoned hardwood.";
+                    }
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(BlueprintManager), nameof(BlueprintManager.GetAllBlueprints))]
+        public static class BlueprintManager_GetAllBlueprints
+        {
+            public static void Postfix(BlueprintManager __instance)
+            {
+                if (__instance?.m_AllBlueprints == null)
+                {
+                    return;
+                }
+
+                bool noBench = Settings.options.arrowsNoBench == YesNo.No;
+                CraftingLocation arrowBench = noBench ? CraftingLocation.Anywhere : CraftingLocation.Workbench;
+                int noBenchPenalty = noBench ? Settings.options.arrowNoBenchTime : 0;
+                int archeryLevel = GameManager.GetSkillArchery().GetCurrentTierNumber() + 1;
+
                 foreach (BlueprintData val in __instance.m_AllBlueprints)
                 {
-                    //ArrowMod.Log(" * " + val.name);
-                    if (val.name == "BLUEPRINT_GEAR_Arrow_A")
+                    if (val == null)
                     {
-                      val.Locked = Settings.options.arrowUseLine;
-                      val.m_IgnoreLockInSurvival = false; // vanilla BP, needs to be set
-                      ArrowMod.Log("Lock: " + val.name + " " + val.Locked);
-                    } 
-                    
-                    else if (val.name.StartsWith("BLUEPRINT_GEAR_Arrow_ArrowMod_A"))
-                    {
-                      val.Locked = val.m_IgnoreLockInSurvival = !Settings.options.arrowUseLine;
-                      ArrowMod.Log("Lock: " + val.name + " " + val.Locked);
-                      val.m_DurationMinutes = Settings.options.arrowCraftTime * val.m_CraftedResultCount;
-                      ArrowMod.Log("arrow time: " + val.m_DurationMinutes + " for " + val.name);
+                        continue;
+                    }
 
-                    }
-                    
-                    else if (val.name.StartsWith("BLUEPRINT_GEAR_Arrow_ArrowMod_B"))
+                    if (val.name == "BLUEPRINT_GEAR_ArrowShaft_ArrowModRenewed_A")
                     {
-
-                      val.Locked = !(Settings.options.arrowUseLine && Settings.options.craftFletchingFromBark && GameManager.GetSkillArchery().GetCurrentTierNumber() + 1 >= Settings.options.craftFletchingFromBarkLevel);
-                      ArrowMod.Log("Lock: " + val.name + " " + val.Locked);
-                      val.m_DurationMinutes = Settings.options.arrowCraftTime *2 + Settings.options.craftFletchingFromBarkTime;
-                      ArrowMod.Log("arrow time: " + val.m_DurationMinutes + " for " + val.name);
-
+                        val.Locked = !(Settings.options.craftArrowFromWood == YesNo.Yes
+                            && archeryLevel >= Settings.options.craftArrowFromWoodLevel);
                     }
-                    else if (val.name == "BLUEPRINT_GEAR_ArrowShaft_ArrowMod_A")
+                    else if (val.m_CraftedResultGear != null && val.m_CraftedResultGear.name == "GEAR_ArrowHead")
                     {
-                      val.Locked = !(Settings.options.craftArrowFromWood && GameManager.GetSkillArchery().GetCurrentTierNumber() + 1 >= Settings.options.craftArrowFromWoodLevel);
-                      ArrowMod.Log("Lock: " + val.name + " " + val.Locked);
+                        val.m_DurationMinutes = Settings.options.arrowHeadCraftTime * Mathf.FloorToInt(val.m_CraftedResultCount / 2f);
                     }
-                    
-                    // arrowhead time
-                    else if (val.m_CraftedResultGear.name == "GEAR_ArrowHead")
+                    else if (val.m_CraftedResultGear != null && val.m_CraftedResultGear.name == "GEAR_Arrow")
                     {
-                      val.m_DurationMinutes = Settings.options.arrowHeadCraftTime * (int)Mathf.Floor(val.m_CraftedResultCount/2);
-                      ArrowMod.Log("arrowhead time: " + val.m_DurationMinutes + " for " + val.name);
-                    }
-                    // arrows crafting time (override all others BP)
-                    // arrows bench
-                    else if (val.m_CraftedResultGear.name == "GEAR_Arrow")
-                    {
-                      val.m_DurationMinutes = Settings.options.arrowCraftTime * val.m_CraftedResultCount;
-                      ArrowMod.Log("arrow time: " + val.m_DurationMinutes + " for " + val.name);
+                        val.m_RequiredCraftingLocation = arrowBench;
+                        val.m_DurationMinutes = (Settings.options.arrowCraftTime + noBenchPenalty) * val.m_CraftedResultCount;
                     }
                 }
             }
         }
 
-        private static GearItem GetGearItemPrefab(string name)
+        public static GearItem? GetGearItemPrefab(string name)
         {
-            return GearItem.LoadGearItemPrefab(name);
-        }
-        
-        private static ToolsItem GetToolItemPrefab(string name)
-        {
-            return GearItem.LoadGearItemPrefab(name).m_ToolsItem;
-        }
-
-        // from CraftingRevisions by ds5678 and STBlade
-        public static Il2CppAK.Wwise.Event? MakeAudioEvent(string eventName)
-        {
-            if (eventName == null)
+            try
+            {
+                GameObject prefab = Addressables.LoadAssetAsync<GameObject>(name).WaitForCompletion();
+                return prefab != null ? prefab.GetComponent<GearItem>() : null;
+            }
+            catch
             {
                 return null;
             }
+        }
+
+        public static ToolsItem? GetToolItemPrefab(string name)
+        {
+            try
+            {
+                GameObject prefab = Addressables.LoadAssetAsync<GameObject>(name).WaitForCompletion();
+                return prefab != null ? prefab.GetComponent<ToolsItem>() : null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        // from CraftingRevisions by ds5678 and STBlade
+        public static Il2CppAK.Wwise.Event? MakeAudioEvent(string? eventName)
+        {
+            if (string.IsNullOrEmpty(eventName))
+            {
+                return null;
+            }
+
             uint eventId = AkSoundEngine.GetIDFromString(eventName);
             if (eventId <= 0 || eventId >= 4294967295)
             {
                 return null;
             }
 
-            Il2CppAK.Wwise.Event newEvent = new();
-            newEvent.WwiseObjectReference = new WwiseEventReference();
-            newEvent.WwiseObjectReference.objectName = eventName;
-            newEvent.WwiseObjectReference.id = eventId;
+            Il2CppAK.Wwise.Event newEvent = new()
+            {
+                WwiseObjectReference = new WwiseEventReference
+                {
+                    objectName = eventName,
+                    id = eventId
+                }
+            };
             return newEvent;
         }
-
     }
 }
